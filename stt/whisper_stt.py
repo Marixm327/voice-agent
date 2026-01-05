@@ -3,16 +3,19 @@ Whisper STT Integration for Voice Agent
 Company: SpaceMarvel.ai
 """
 import whisper
-from typing import Optional
+import numpy as np
+from typing import Optional, Tuple
 
 class WhisperSTT:
     def __init__(self, model_name: str = "base"):
         self.model = whisper.load_model(model_name)
 
-    def transcribe(self, audio_path: str) -> Optional[str]:
-        result = self.model.transcribe(audio_path)
-        return result.get("text")
-
-# Example usage:
-# stt = WhisperSTT()
-# text = stt.transcribe("audio.wav")
+    def transcribe_audio(self, audio: np.ndarray) -> Tuple[Optional[str], Optional[str]]:
+        """
+        Transcribe audio from a numpy array.
+        Returns: (text, detected_language)
+        """
+        result = self.model.transcribe(audio, fp16=False)
+        text = result.get("text")
+        language = result.get("language")
+        return text, language

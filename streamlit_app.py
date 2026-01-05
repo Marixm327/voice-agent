@@ -34,17 +34,23 @@ class AudioProcessor(AudioProcessorBase):
         super().__init__()
         self.stt = WhisperSTT()
 
-    def recv(self, frame):
-        # Convert frame to numpy array
-        audio_data = frame.to_ndarray()
-        # Save to temporary WAV file for Whisper
-        sf.write("temp.wav", audio_data, 16000)
-        text = self.stt.transcribe("temp.wav")
+        def recv(self, frame):
+        # Convert audio frame to numpy array
+        audio_data = frame.to_ndarray().astype("float32")
+
+        # Transcribe directly from memory (no temp file)
+        text, language = self.stt.transcribe_audio(audio_data)
+
         if text:
+            # Store detected language for future multilingual routing
+            st.session_state["last_language"] = language
+
             response = agent_respond(text)
             st.session_state["history"].append({"role": "user", "message": text})
             st.session_state["history"].append({"role": "agent", "message": response})
+
         return frame
+
 
 webrtc_streamer(key="voice-agent", audio_processor_factory=AudioProcessor)
 
