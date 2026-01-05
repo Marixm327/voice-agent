@@ -2,14 +2,17 @@
 Streamlit Voice Agent UI
 Company: SpaceMarvel.ai
 """
+import time
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
 from memory.memory import ConversationMemory
 from llm.llm import GeminiLLM
-from agent.agent import agent_respond
+#from agent.agent import agent_respond
 from stt.whisper_stt import WhisperSTT
-import soundfile as sf
 import numpy as np
+
+def agent_respond(text):
+    return f"[STT OK] You said: {text}"
 
 st.set_page_config(page_title="Voice Agent", layout="centered")
 st.title("SpaceMarvel Voice Agent")
@@ -34,12 +37,17 @@ class AudioProcessor(AudioProcessorBase):
         super().__init__()
         self.stt = WhisperSTT()
 
-        def recv(self, frame):
+    def recv(self, frame):
         # Convert audio frame to numpy array
         audio_data = frame.to_ndarray().astype("float32")
 
         # Transcribe directly from memory (no temp file)
         text, language = self.stt.transcribe_audio(audio_data)
+
+
+        stt_latency = stt_end - stt_start
+        print(f"[LATENCY] STT time: {stt_latency:.3f} seconds")
+
 
         if text:
             # Store detected language for future multilingual routing
